@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: employee-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: employee-api
+  template:
+    metadata:
+      labels:
+        app: employee-api
+    spec:
+      serviceAccountName: employee-api
+      containers:
+      - name: employee-api
+        image: anjalikfti24/employee-api:1.1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: employee-api
+spec:
+  selector:
+    app: employee-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: employee-api
+spec:
+  to:
+    kind: Service
+    name: employee-api
+  port:
+    targetPort: 80
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: employee-api
+  namespace: employee
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: employee-api-creator
+  namespace: employee
+rules:
+- apiGroups: ["mydomain.com"]
+  resources: ["employeeapis"]
+  verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: employee-api-creator-binding
+  namespace: employee
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: employee-api-creator
+subjects:
+- kind: ServiceAccount
+  name: employee-api
+  namespace: employee

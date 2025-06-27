@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: employee-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: employee-operator
+  template:
+    metadata:
+      labels:
+        app: employee-operator
+    spec:
+      serviceAccountName: employee-operator
+      containers:
+      - name: operator
+        image: anjalikfti24/employee-operator:1.1
+        imagePullPolicy: Always
+        command: ["kopf", "run", "--standalone", "operator.py"]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: employee-operator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: employee-operator-role
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "endpoints", "persistentvolumeclaims", "events", "configmaps", "secrets"]
+  verbs: ["*"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "daemonsets", "replicasets", "statefulsets"]
+  verbs: ["*"]
+- apiGroups: ["mydomain.com"]
+  resources: ["employeeapis"]
+  verbs: ["*"]
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: employee-operator-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: employee-operator-role
+subjects:
+- kind: ServiceAccount
+  name: employee-operator
+  namespace: employee
+

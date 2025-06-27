@@ -1,0 +1,10 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: employee-api
+spec:
+  to:
+    kind: Service
+    name: employee-api
+  port:
+    targetPort: 80
