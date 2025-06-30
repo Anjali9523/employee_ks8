@@ -34,7 +34,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile.api
+          file: ./Dockerfile
           push: true
           tags: anjalikfti24/employee-api:1.2
 
