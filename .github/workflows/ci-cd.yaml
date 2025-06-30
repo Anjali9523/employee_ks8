@@ -53,11 +53,11 @@ jobs:
     env:
       NAMESPACE: employee
     steps:
-      - name: crc Setup
+      - name: Install oc CLI
         run: |
-          crc setup
-          crc start
-          eval $(crc oc-env)
+          curl -LO "https://mirror.openshift.com/pub/openshift-v4/clients/oc/latest/linux/oc.tar.gz"
+          tar -xzf oc.tar.gz
+          sudo mv oc /usr/local/bin/
       - name: Login to OpenShift
         run: |
           oc login "https://api.crc.testing:6443" --token="sha256~XWpGPyC3qF8dB8QWTpW0EGwqVUlZrD5pv0CQbp38EPA" --insecure-skip-tls-verify
