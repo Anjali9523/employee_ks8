@@ -46,25 +46,46 @@ jobs:
           push: true
           tags: anjalikfti24/employee-operator:1.2
 
-  # Optional: Deploy to OpenShift
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - name: Install oc CLI
-        run: |
-          curl -LO "https://mirror.openshift.com/pub/openshift-v4/clients/oc/latest/linux/oc.tar.gz"
-          tar -xzf oc.tar.gz
-          sudo mv oc /usr/local/bin/
-      - name: Login to OpenShift
-        run: |
-          oc login "https://api.crc.testing:6443" --token="sha256~XWpGPyC3qF8dB8QWTpW0EGwqVUlZrD5pv0CQbp38EPA" --insecure-skip-tls-verify
-      - name: Set project
-        run: oc project employee
-      - name: Update employee-api deployment image
-        run: |
-          oc set image deployment/employee-api employee-api=anjalikfti24/employee-api:1.2
-      - name: Update employee-operator deployment image
-        run: |
-          oc set image deployment/employee-operator operator=anjalikfti24/employee-operator:1.1
+deploy:
+  needs: build-and-push
+  runs-on: ubuntu-latest
+  if: github.ref == 'refs/heads/main'
+  env:
+    NAMESPACE: employee
+  steps:
+    - name: crc Setup
+      run: |
+        crc setup
+        crc start
+        eval $(crc oc-env)
+    - name: Login to OpenShift
+      run: |
+        oc login "https://api.crc.testing:6443" --token="sha256~XWpGPyC3qF8dB8QWTpW0EGwqVUlZrD5pv0CQbp38EPA" --insecure-skip-tls-verify
+    - name: Set project
+      run: oc project $NAMESPACE
+
+    - name: Apply CRD
+      run: oc apply -f crd.yaml
+
+    - name: Deploy operator
+      run: |
+        echo "🛠️  Deploying operator..."
+        oc apply -f operator-deployment.yaml -n $NAMESPACE
+
+    - name: Deploy application
+      run: |
+        echo "🛠️  Deploying application..."
+        oc apply -f deployment.yaml -n $NAMESPACE
+
+    - name: Delete route if available
+      run: |
+        echo "Delete route if available"
+        oc delete route employee-api -n $NAMESPACE || true
+
+    - name: Wait for 5 minutes
+      run: sleep 300
+
+    - name: Expose service
+      run: |
+        echo "🌐 Exposing service..."
+        oc expose service employee-api -n $NAMESPACE
