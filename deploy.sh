@@ -32,8 +32,8 @@
 set -e
 
 # Variables
-APP_IMAGE="anjalikfti24/employee-api:1.1"
-OPERATOR_IMAGE="anjalikfti24/employee-operator:1.1"
+APP_IMAGE="anjalikfti24/employee-api:1.2"
+OPERATOR_IMAGE="anjalikfti24/employee-operator:1.2"
 NAMESPACE="employee"
 
 #podman tag $APP_IMAGE $OPERATOR_IMAGE

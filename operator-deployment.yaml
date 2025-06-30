@@ -15,7 +15,7 @@ spec:
       serviceAccountName: employee-operator
       containers:
       - name: operator
-        image: anjalikfti24/employee-operator:1.1
+        image: anjalikfti24/employee-operator:1.2
         imagePullPolicy: Always
         command: ["kopf", "run", "--standalone", "operator.py"]
 ---

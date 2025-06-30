@@ -15,7 +15,7 @@ spec:
       serviceAccountName: employee-api
       containers:
       - name: employee-api
-        image: anjalikfti24/employee-api:1.1
+        image: anjalikfti24/employee-api:1.2
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
